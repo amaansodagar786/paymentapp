@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Home.scss';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe("pk_test_51PBrnHSCoeIancTYpohTFi6sdV14HfblH7Wq9I2gukILjHe4OlBqLWKgZh8e6XULghXx2Kwl6Jsv7atTfCpNVnnk008CMf4QSD");
 
 const Home = () => {
     const itemName = "image";
@@ -8,12 +11,19 @@ const Home = () => {
     const [finalAmount, setFinalAmount] = useState(itemPrice);
     const [customerName, setCustomerName] = useState('');
     const [customerAddress, setCustomerAddress] = useState('');
+    const [loading, setLoading] = useState(false); // State to manage loading state
+
+    useEffect(() => {
+        // Function to load Stripe.js asynchronously
+        const loadStripeJs = async () => {
+            await stripePromise;
+        };
+
+        loadStripeJs();
+    }, []);
 
     const decrement = () => {
-        if (quantity <= 1) {
-            setQuantity(1);
-            setFinalAmount(itemPrice);
-        } else {
+        if (quantity > 1) {
             setQuantity(quantity - 1);
             setFinalAmount(finalAmount - itemPrice);
         }
@@ -25,8 +35,10 @@ const Home = () => {
     };
 
     const checkout = async () => {
+        setLoading(true); // Set loading state to true during checkout process
+
         try {
-            const res = await fetch("http://localhost:5000/checkout", {
+            const response = await fetch("https://paymentbackend.vercel.app/checkout", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -44,10 +56,21 @@ const Home = () => {
                     customerAddress: customerAddress
                 })
             });
-            const data = await res.json();
-            window.location.href = data.url; // Redirect to the payment URL returned from the server
+
+            const session = await response.json();
+            const stripe = await stripePromise;
+
+            const result = await stripe.redirectToCheckout({
+                sessionId: session.sessionId,
+            });
+
+            if (result.error) {
+                console.error(result.error.message);
+                setLoading(false); // Set loading state back to false if there is an error
+            }
         } catch (error) {
             console.log(error);
+            setLoading(false); // Set loading state back to false on error
         }
     };
 
@@ -74,7 +97,9 @@ const Home = () => {
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
             />
-            <button className="checkout-btn" onClick={checkout}>Checkout</button>
+            <button className="checkout-btn" onClick={checkout} disabled={loading}>
+                {loading ? 'Loading...' : 'Checkout'}
+            </button>
         </div>
     );
 };
