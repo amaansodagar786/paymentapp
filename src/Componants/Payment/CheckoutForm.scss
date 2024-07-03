@@ -1,0 +1,49 @@
+// src/components/Payment/CheckoutForm.scss
+.checkout-form {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  form {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    input {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background-color: white;
+    }
+
+    button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: #0056b3;
+      }
+
+      &:disabled {
+        background: #cccccc;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
